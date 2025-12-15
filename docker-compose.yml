@@ -6,3 +6,6 @@ services:
     volumes:
       - ./data:/app/data
     container_name: focus-timer
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
