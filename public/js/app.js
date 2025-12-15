@@ -50,15 +50,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const percentage = Math.min((totalSeconds / GOAL_SECONDS) * 100, 100);
         goalProgressFill.style.width = `${percentage}%`;
 
-        // Update color: red (0%) -> yellow (50%) -> green (100%)
+        // Update color: match button colors for consistency
         if (percentage >= 100) {
             // Rainbow animation at 100%
             goalProgressFill.classList.add('rainbow');
         } else {
             goalProgressFill.classList.remove('rainbow');
-            // HSL color: 0 (red) to 120 (green)
-            const hue = Math.round(percentage * 1.2);
-            goalProgressFill.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+            // Interpolate from danger button red (#f44336) to primary button green (#4CAF50)
+            const red = { r: 244, g: 67, b: 54 };
+            const green = { r: 76, g: 175, b: 80 };
+            const factor = percentage / 100;
+
+            const r = Math.round(red.r + (green.r - red.r) * factor);
+            const g = Math.round(red.g + (green.g - red.g) * factor);
+            const b = Math.round(red.b + (green.b - red.b) * factor);
+
+            goalProgressFill.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
         }
     }
 
