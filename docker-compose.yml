@@ -7,6 +7,7 @@ services:
       - "7272:7272"
     volumes:
       - ./data:/app/data
+      - ./certs:/app/certs 
     container_name: focus-timer
     dns:
       - 8.8.8.8

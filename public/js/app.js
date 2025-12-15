@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let originalSeconds = 0;
     let isPaused = false;
     let timerStartDate = null;
+    let timerStartTimestamp = null;
+    let pausedElapsedSeconds = 0;
 
     const focusBtn = document.getElementById('focusBtn');
     const pauseBtn = document.getElementById('pauseBtn');
@@ -35,6 +37,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const minutes = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Request notification permission from user
+    function requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    // Send notification when timer completes
+    function notifyTimerComplete(minutes, seconds) {
+        // Browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Focus Complete! ✓', {
+                body: `${minutes} min ${seconds} sec completed`,
+                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="green"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>'
+            });
+        }
+
+        // Audio alert using Web Audio API
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800; // Frequency in Hz
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.6, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (e) {
+            console.log('Audio notification skipped:', e);
+        }
     }
 
     let dailyTotalCache = 0;
@@ -152,8 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function resumeTimer() {
         isPaused = false;
         pauseIcon.querySelector('path').setAttribute('d', PAUSE_PATH);
+        timerStartTimestamp = Date.now() - (pausedElapsedSeconds * 1000);
         timerInterval = setInterval(() => {
-            secondsRemaining--;
+            const elapsedSeconds = Math.floor((Date.now() - timerStartTimestamp) / 1000);
+            secondsRemaining = Math.max(0, originalSeconds - elapsedSeconds);
             timerDisplay.textContent = formatTime(secondsRemaining);
 
             const percent = (secondsRemaining / originalSeconds) * 100;
@@ -165,6 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 addToDailyWithDate(originalSeconds, timerStartDate);
                 const sessMinutes = Math.floor(originalSeconds / 60);
                 const sessSeconds = originalSeconds % 60;
+
+                // Send notification
+                notifyTimerComplete(sessMinutes, sessSeconds);
 
                 timerDisplay.innerHTML = `
                     <div class="completion-message">
@@ -181,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function stopTimer() {
         clearInterval(timerInterval);
-        const elapsedSeconds = originalSeconds - secondsRemaining;
+        const elapsedSeconds = isPaused ? pausedElapsedSeconds : Math.floor((Date.now() - timerStartTimestamp) / 1000);
         const elapsedMinutes = Math.floor(elapsedSeconds / 60);
         const elapsedSecs = elapsedSeconds % 60;
 
@@ -205,6 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
             isPaused = true;
             clearInterval(timerInterval);
             pauseIcon.querySelector('path').setAttribute('d', PLAY_PATH);
+            // Save elapsed time for when we resume
+            pausedElapsedSeconds = originalSeconds - secondsRemaining;
         }
     }
 
@@ -226,6 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         secondsRemaining = totalSeconds;
         originalSeconds = totalSeconds;
+        pausedElapsedSeconds = 0;
+        timerStartTimestamp = Date.now();
         timerDisplay.textContent = formatTime(secondsRemaining);
         pauseBtn.style.display = 'flex';
         stopBtn.style.display = 'flex';
@@ -256,4 +306,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize
     loadPreferences();
     loadDailyTotal();
+    requestNotificationPermission();
 });

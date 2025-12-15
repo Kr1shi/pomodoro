@@ -1,6 +1,8 @@
 const express = require('express');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 7272;
@@ -134,7 +136,32 @@ app.use((err, req, res, next) => {
 
 // Start server
 initDataFile().then(() => {
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Focus Timer running at http://0.0.0.0:${PORT}`);
-    });
+    try {
+        // 1. Look for .crt and .key files in /app/certs
+        const certFiles = fsSync.readdirSync('/app/certs');
+        const crtFile = certFiles.find(f => f.endsWith('.crt'));
+        const keyFile = certFiles.find(f => f.endsWith('.key'));
+
+        if (!crtFile || !keyFile) throw new Error("Certificates not found");
+
+        // 2. Load the certificates
+        const options = {
+            key: fsSync.readFileSync(path.join('/app/certs', keyFile)),
+            cert: fsSync.readFileSync(path.join('/app/certs', crtFile))
+        };
+
+        // 3. Start HTTPS Server
+        https.createServer(options, app).listen(PORT, '0.0.0.0', () => {
+            console.log(`✅ Focus Timer (HTTPS) running at https://0.0.0.0:${PORT}`);
+        });
+
+    } catch (err) {
+        console.warn("⚠️  SSL Certs missing or invalid. Falling back to HTTP (Notifications will fail).");
+        console.error(err.message);
+        
+        // Fallback to HTTP if certs fail
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Focus Timer (HTTP) running at http://0.0.0.0:${PORT}`);
+        });
+    }
 });
