@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dailyTotalDisplay = document.getElementById('dailyTotalDisplay');
     const progressRing = document.getElementById('progressRing');
     const pauseIcon = document.getElementById('pauseIcon');
+    const goalProgressFill = document.getElementById('goalProgressFill');
 
     // Progress ring setup
     const radius = 120;
@@ -43,11 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return today;
     }
 
+    function updateGoalProgress() {
+        const GOAL_SECONDS = 10800; // 3 hours = 10,800 seconds
+        const totalSeconds = getDailyTotal();
+        const percentage = Math.min((totalSeconds / GOAL_SECONDS) * 100, 100);
+        goalProgressFill.style.width = `${percentage}%`;
+    }
+
     function updateDailyTotalDisplay() {
         const totalSeconds = getDailyTotal();
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
         dailyTotalDisplay.textContent = `${minutes} min ${seconds} sec`;
+        updateGoalProgress();
     }
 
     // Load timer preferences
