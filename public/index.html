@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Timer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="card">
+        <div class="time-input-group">
+            <div class="time-input-wrapper">
+                <input type="number" id="minutesInput" class="time-input" value="25" min="0" max="99">
+                <span class="input-label">min</span>
+            </div>
+            <span class="time-separator">:</span>
+            <div class="time-input-wrapper">
+                <input type="number" id="secondsInput" class="time-input" value="00" min="0" max="59">
+                <span class="input-label">sec</span>
+            </div>
+        </div>
+
+        <div class="timer-container">
+            <svg class="progress-ring" width="260" height="260">
+                <circle class="progress-ring__background" cx="130" cy="130" r="120"/>
+                <circle class="progress-ring__progress" id="progressRing" cx="130" cy="130" r="120"/>
+            </svg>
+            <div class="timer-text-container">
+                <div id="timer">25:00</div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="focusBtn" class="btn btn--primary" title="Start Focus">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </button>
+            <button id="pauseBtn" class="btn btn--secondary" title="Pause">
+                <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+            </button>
+            <button id="stopBtn" class="btn btn--danger" title="Stop">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 6h12v12H6z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="daily-total">
+            <div class="daily-total__label">Today's Focus Time</div>
+            <div class="daily-total__value" id="dailyTotalDisplay">0 min 0 sec</div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

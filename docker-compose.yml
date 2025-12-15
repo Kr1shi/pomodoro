@@ -1,0 +1,8 @@
+services:
+  focus-timer:
+    build: .
+    ports:
+      - "7272:8000"
+    volumes:
+      - ./data:/app/data
+    container_name: focus-timer
