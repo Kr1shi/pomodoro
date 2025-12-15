@@ -13,6 +13,6 @@ COPY public/ ./public/
 # Create data directory
 RUN mkdir -p /app/data
 
-EXPOSE 8000
+EXPOSE 7272
 
 CMD ["node", "server.js"]

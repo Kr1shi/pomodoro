@@ -2,7 +2,7 @@ services:
   focus-timer:
     build: .
     ports:
-      - "7272:8000"
+      - "7272:7272"
     volumes:
       - ./data:/app/data
     container_name: focus-timer

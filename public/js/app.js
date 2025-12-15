@@ -49,6 +49,32 @@ document.addEventListener('DOMContentLoaded', () => {
         dailyTotalDisplay.textContent = `${minutes} min ${seconds} sec`;
     }
 
+    // Load timer preferences
+    async function loadPreferences() {
+        try {
+            const response = await fetch('/api/preferences');
+            const prefs = await response.json();
+            minutesInput.value = prefs.lastMinutes;
+            secondsInput.value = prefs.lastSeconds.toString().padStart(2, '0');
+            updateInitialDisplay();
+        } catch (err) {
+            console.error('Failed to load preferences:', err);
+        }
+    }
+
+    // Save timer preferences
+    async function savePreferences(minutes, seconds) {
+        try {
+            await fetch('/api/preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lastMinutes: minutes, lastSeconds: seconds })
+            });
+        } catch (err) {
+            console.error('Failed to save preferences:', err);
+        }
+    }
+
     async function loadDailyTotal() {
         try {
             const response = await fetch(`/api/daily-total/${getTodayKey()}`);
@@ -159,6 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Save preferences for next time
+        savePreferences(minutes, seconds);
+
         secondsRemaining = totalSeconds;
         originalSeconds = totalSeconds;
         timerDisplay.textContent = formatTime(secondsRemaining);
@@ -189,6 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
     stopBtn.addEventListener('click', stopTimer);
 
     // Initialize
+    loadPreferences();
     loadDailyTotal();
-    updateInitialDisplay();
 });

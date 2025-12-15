@@ -3,7 +3,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 7272;
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'data.json');
 
@@ -17,6 +17,13 @@ function isValidDate(dateStr) {
     if (!regex.test(dateStr)) return false;
     const date = new Date(dateStr);
     return date instanceof Date && !isNaN(date);
+}
+
+// Validation helper - checks preferences
+function isValidPreferences(preferences) {
+    const { lastMinutes, lastSeconds } = preferences;
+    return typeof lastMinutes === 'number' && lastMinutes >= 0 &&
+           typeof lastSeconds === 'number' && lastSeconds >= 0 && lastSeconds < 60;
 }
 
 // Initialize data directory and file
@@ -82,6 +89,36 @@ app.post('/api/daily-total/:date', async (req, res, next) => {
 
         const data = await readData();
         data[date] = total;
+        await writeData(data);
+        res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Get user preferences
+app.get('/api/preferences', async (req, res, next) => {
+    try {
+        const data = await readData();
+        const preferences = data.preferences || { lastMinutes: 25, lastSeconds: 0 };
+        res.json(preferences);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Save user preferences
+app.post('/api/preferences', async (req, res, next) => {
+    try {
+        if (!isValidPreferences(req.body)) {
+            return res.status(400).json({ error: 'Invalid preferences' });
+        }
+
+        const data = await readData();
+        data.preferences = {
+            lastMinutes: req.body.lastMinutes,
+            lastSeconds: req.body.lastSeconds
+        };
         await writeData(data);
         res.json({ success: true });
     } catch (err) {

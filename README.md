@@ -32,7 +32,7 @@ npm install
 # Start the server
 npm start
 
-# Access the app at http://localhost:8000
+# Access the app at http://localhost:7272
 ```
 
 ## Project Structure
