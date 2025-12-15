@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let secondsRemaining = 0;
     let originalSeconds = 0;
     let isPaused = false;
+    let timerStartDate = null;
 
     const focusBtn = document.getElementById('focusBtn');
     const pauseBtn = document.getElementById('pauseBtn');
@@ -93,20 +94,30 @@ document.addEventListener('DOMContentLoaded', () => {
         return dailyTotalCache;
     }
 
-    async function addToDaily(seconds) {
-        const current = getDailyTotal();
-        const newTotal = current + seconds;
-        dailyTotalCache = newTotal;
-        updateDailyTotalDisplay();
+    async function addToDailyWithDate(seconds, date) {
         try {
-            await fetch(`/api/daily-total/${getTodayKey()}`, {
+            const response = await fetch(`/api/daily-total/${date}`);
+            const data = await response.json();
+            const newTotal = data.total + seconds;
+
+            await fetch(`/api/daily-total/${date}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ total: newTotal })
             });
+
+            // Update cache and display only if it's today's date
+            if (date === getTodayKey()) {
+                dailyTotalCache = newTotal;
+                updateDailyTotalDisplay();
+            }
         } catch (err) {
             console.error('Failed to save daily total:', err);
         }
+    }
+
+    async function addToDaily(seconds) {
+        return addToDailyWithDate(seconds, getTodayKey());
     }
 
     function resetTimerDisplay() {
@@ -130,7 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (secondsRemaining === 0) {
                 clearInterval(timerInterval);
-                addToDaily(originalSeconds);
+                // Use start date to handle cross-day sessions
+                addToDailyWithDate(originalSeconds, timerStartDate);
                 const sessMinutes = Math.floor(originalSeconds / 60);
                 const sessSeconds = originalSeconds % 60;
 
@@ -153,7 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const elapsedMinutes = Math.floor(elapsedSeconds / 60);
         const elapsedSecs = elapsedSeconds % 60;
 
-        addToDaily(elapsedSeconds);
+        // Use start date to handle cross-day sessions
+        addToDailyWithDate(elapsedSeconds, timerStartDate);
 
         timerDisplay.innerHTML = `
             <div class="completion-message">
@@ -187,6 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Save preferences for next time
         savePreferences(minutes, seconds);
+
+        // Capture the start date for cross-day session attribution
+        timerStartDate = getTodayKey();
 
         secondsRemaining = totalSeconds;
         originalSeconds = totalSeconds;
