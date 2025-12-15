@@ -267,7 +267,7 @@ body {
         #ff0000 0%, #ff7f00 14.3%, #ffff00 28.6%, #00ff00 42.9%,
         #0000ff 57.1%, #4b0082 71.4%, #9400d3 85.7%, #ff0000 100%);
     background-size: 300% 100%;
-    animation: rainbow-slide 4s linear infinite;
+    animation: rainbow-slide 5s linear infinite;
 }
 
 @keyframes rainbow-slide {
