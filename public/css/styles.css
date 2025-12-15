@@ -256,8 +256,21 @@ body {
 
 .goal-progress__fill {
     height: 100%;
-    background-color: #4CAF50;
+    background-color: #f44336;
     border-radius: 4px;
-    transition: width 0.3s ease;
+    transition: width 0.3s ease, background-color 0.3s ease;
     width: 0%;
+}
+
+.goal-progress__fill.rainbow {
+    background: linear-gradient(90deg,
+        #ff0000, #ff7f00, #ffff00, #00ff00,
+        #0000ff, #4b0082, #9400d3);
+    background-size: 200% 100%;
+    animation: rainbow-slide 2s linear infinite;
+}
+
+@keyframes rainbow-slide {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
 }

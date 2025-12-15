@@ -49,6 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalSeconds = getDailyTotal();
         const percentage = Math.min((totalSeconds / GOAL_SECONDS) * 100, 100);
         goalProgressFill.style.width = `${percentage}%`;
+
+        // Update color: red (0%) -> yellow (50%) -> green (100%)
+        if (percentage >= 100) {
+            // Rainbow animation at 100%
+            goalProgressFill.classList.add('rainbow');
+        } else {
+            goalProgressFill.classList.remove('rainbow');
+            // HSL color: 0 (red) to 120 (green)
+            const hue = Math.round(percentage * 1.2);
+            goalProgressFill.style.backgroundColor = `hsl(${hue}, 100%, 50%)`;
+        }
     }
 
     function updateDailyTotalDisplay() {
