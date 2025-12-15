@@ -177,8 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function addToDaily(seconds) {
-        return addToDailyWithDate(seconds, getTodayKey());
+
+
+    function displayCompletionMessage(title, sessionMinutes, sessionSeconds, isComplete = false) {
+        timerDisplay.innerHTML = `
+            <div class="completion-message">
+                ${isComplete ? '<div class="completion-message__icon">&#10003;</div>' : ''}
+                <div class="completion-message__title">${title}</div>
+                <div class="completion-message__session">${sessionMinutes} min ${sessionSeconds} sec</div>
+            </div>
+        `;
     }
 
     function resetTimerDisplay() {
@@ -212,13 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Send notification
                 notifyTimerComplete(sessMinutes, sessSeconds);
 
-                timerDisplay.innerHTML = `
-                    <div class="completion-message">
-                        <div class="completion-message__icon">&#10003;</div>
-                        <div class="completion-message__title">Focus Complete!</div>
-                        <div class="completion-message__session">${sessMinutes} min ${sessSeconds} sec</div>
-                    </div>
-                `;
+                displayCompletionMessage('Focus Complete!', sessMinutes, sessSeconds, true);
 
                 resetTimerDisplay();
             }
@@ -234,12 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Use start date to handle cross-day sessions
         addToDailyWithDate(elapsedSeconds, timerStartDate);
 
-        timerDisplay.innerHTML = `
-            <div class="completion-message">
-                <div class="completion-message__title">Session Ended</div>
-                <div class="completion-message__session">${elapsedMinutes} min ${elapsedSecs} sec</div>
-            </div>
-        `;
+        displayCompletionMessage('Session Ended', elapsedMinutes, elapsedSecs);
 
         resetTimerDisplay();
     }
