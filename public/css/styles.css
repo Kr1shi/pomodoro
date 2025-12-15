@@ -264,13 +264,13 @@ body {
 
 .goal-progress__fill.rainbow {
     background: linear-gradient(90deg,
-        #ff0000, #ff7f00, #ffff00, #00ff00,
-        #0000ff, #4b0082, #9400d3, #ff0000);
-    background-size: 300% 100%;
+        #ff0000 0%, #ff7f00 12.5%, #ffff00 25%, #00ff00 37.5%,
+        #0000ff 50%, #4b0082 62.5%, #9400d3 75%, #ff0000 87.5%, #ff0000 100%);
+    background-size: 200% 100%;
     animation: rainbow-slide 3s linear infinite;
 }
 
 @keyframes rainbow-slide {
     0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
+    100% { background-position: 50% 50%; }
 }
