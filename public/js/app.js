@@ -197,34 +197,41 @@ document.addEventListener('DOMContentLoaded', () => {
         setProgress(0);
     }
 
+    function updateTimer() {
+        const elapsedSeconds = Math.floor((Date.now() - timerStartTimestamp) / 1000);
+        secondsRemaining = Math.max(0, originalSeconds - elapsedSeconds);
+        timerDisplay.textContent = formatTime(secondsRemaining);
+
+        const percent = (secondsRemaining / originalSeconds) * 100;
+        setProgress(percent);
+
+        if (secondsRemaining === 0) {
+            clearInterval(timerInterval);
+            // Use start date to handle cross-day sessions
+            addToDailyWithDate(originalSeconds, timerStartDate);
+            const sessMinutes = Math.floor(originalSeconds / 60);
+            const sessSeconds = originalSeconds % 60;
+
+            // Send notification
+            notifyTimerComplete(sessMinutes, sessSeconds);
+
+            displayCompletionMessage('Focus Complete!', sessMinutes, sessSeconds, true);
+
+            resetTimerDisplay();
+        }
+    }
+
     function resumeTimer() {
         isPaused = false;
         playPauseIcon.querySelector('path').setAttribute('d', PAUSE_PATH);
         focusBtn.title = 'Pause';
         timerStartTimestamp = Date.now() - (pausedElapsedSeconds * 1000);
-        timerInterval = setInterval(() => {
-            const elapsedSeconds = Math.floor((Date.now() - timerStartTimestamp) / 1000);
-            secondsRemaining = Math.max(0, originalSeconds - elapsedSeconds);
-            timerDisplay.textContent = formatTime(secondsRemaining);
 
-            const percent = (secondsRemaining / originalSeconds) * 100;
-            setProgress(percent);
+        // Update immediately to avoid skip
+        updateTimer();
 
-            if (secondsRemaining === 0) {
-                clearInterval(timerInterval);
-                // Use start date to handle cross-day sessions
-                addToDailyWithDate(originalSeconds, timerStartDate);
-                const sessMinutes = Math.floor(originalSeconds / 60);
-                const sessSeconds = originalSeconds % 60;
-
-                // Send notification
-                notifyTimerComplete(sessMinutes, sessSeconds);
-
-                displayCompletionMessage('Focus Complete!', sessMinutes, sessSeconds, true);
-
-                resetTimerDisplay();
-            }
-        }, 1000);
+        // Then continue updating every second
+        timerInterval = setInterval(updateTimer, 1000);
     }
 
     function stopTimer() {
