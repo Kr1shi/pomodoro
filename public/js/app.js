@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetTimerDisplay() {
+        timerInterval = null;
         stopBtn.style.display = 'none';
         playPauseIcon.querySelector('path').setAttribute('d', PLAY_PATH);
         focusBtn.title = 'Start Focus';
@@ -206,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setProgress(percent);
 
         if (secondsRemaining === 0) {
+            clearTimeout(timerInterval);
             clearInterval(timerInterval);
             // Use start date to handle cross-day sessions
             addToDailyWithDate(originalSeconds, timerStartDate);
@@ -230,11 +232,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update immediately to avoid skip
         updateTimer();
 
-        // Then continue updating every second
-        timerInterval = setInterval(updateTimer, 1000);
+        // Calculate ms until next whole second boundary
+        const elapsedMs = Date.now() - timerStartTimestamp;
+        const msUntilNextSecond = 1000 - (elapsedMs % 1000);
+
+        // First tick aligned to second boundary, then regular interval
+        timerInterval = setTimeout(() => {
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }, msUntilNextSecond);
     }
 
     function stopTimer() {
+        clearTimeout(timerInterval);
         clearInterval(timerInterval);
         const elapsedSeconds = isPaused ? pausedElapsedSeconds : Math.floor((Date.now() - timerStartTimestamp) / 1000);
         const elapsedMinutes = Math.floor(elapsedSeconds / 60);
@@ -250,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function pauseTimer() {
         isPaused = true;
+        clearTimeout(timerInterval);
         clearInterval(timerInterval);
         playPauseIcon.querySelector('path').setAttribute('d', PLAY_PATH);
         focusBtn.title = 'Resume';
