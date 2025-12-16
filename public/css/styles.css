@@ -172,16 +172,6 @@ body {
     box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
 }
 
-.btn--secondary {
-    background-color: #555;
-    color: white;
-    display: none;
-}
-
-.btn--secondary:hover {
-    background-color: #666;
-}
-
 .btn--danger {
     background-color: #f44336;
     color: white;

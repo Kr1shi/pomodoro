@@ -8,14 +8,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let pausedElapsedSeconds = 0;
 
     const focusBtn = document.getElementById('focusBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
     const stopBtn = document.getElementById('stopBtn');
     const timerDisplay = document.getElementById('timer');
     const minutesInput = document.getElementById('minutesInput');
     const secondsInput = document.getElementById('secondsInput');
     const dailyTotalDisplay = document.getElementById('dailyTotalDisplay');
     const progressRing = document.getElementById('progressRing');
-    const pauseIcon = document.getElementById('pauseIcon');
+    const playPauseIcon = document.getElementById('playPauseIcon');
     const goalProgressFill = document.getElementById('goalProgressFill');
 
     // Progress ring setup
@@ -190,9 +189,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetTimerDisplay() {
-        pauseBtn.style.display = 'none';
         stopBtn.style.display = 'none';
-        focusBtn.disabled = false;
+        playPauseIcon.querySelector('path').setAttribute('d', PLAY_PATH);
+        focusBtn.title = 'Start Focus';
         minutesInput.disabled = false;
         secondsInput.disabled = false;
         setProgress(0);
@@ -200,7 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resumeTimer() {
         isPaused = false;
-        pauseIcon.querySelector('path').setAttribute('d', PAUSE_PATH);
+        playPauseIcon.querySelector('path').setAttribute('d', PAUSE_PATH);
+        focusBtn.title = 'Pause';
         timerStartTimestamp = Date.now() - (pausedElapsedSeconds * 1000);
         timerInterval = setInterval(() => {
             const elapsedSeconds = Math.floor((Date.now() - timerStartTimestamp) / 1000);
@@ -242,15 +242,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function pauseTimer() {
-        if (isPaused) {
-            resumeTimer();
-        } else {
-            isPaused = true;
-            clearInterval(timerInterval);
-            pauseIcon.querySelector('path').setAttribute('d', PLAY_PATH);
-            // Save elapsed time for when we resume
-            pausedElapsedSeconds = originalSeconds - secondsRemaining;
-        }
+        isPaused = true;
+        clearInterval(timerInterval);
+        playPauseIcon.querySelector('path').setAttribute('d', PLAY_PATH);
+        focusBtn.title = 'Resume';
+        // Save elapsed time for when we resume
+        pausedElapsedSeconds = originalSeconds - secondsRemaining;
     }
 
     function startTimer() {
@@ -274,16 +271,27 @@ document.addEventListener('DOMContentLoaded', () => {
         pausedElapsedSeconds = 0;
         timerStartTimestamp = Date.now();
         timerDisplay.textContent = formatTime(secondsRemaining);
-        pauseBtn.style.display = 'flex';
         stopBtn.style.display = 'flex';
         isPaused = false;
         setProgress(100);
 
-        focusBtn.disabled = true;
         minutesInput.disabled = true;
         secondsInput.disabled = true;
 
         resumeTimer();
+    }
+
+    function handlePlayPauseClick() {
+        // If timer is not running (no interval), start it
+        if (timerInterval === null) {
+            startTimer();
+        } else if (isPaused) {
+            // If paused, resume
+            resumeTimer();
+        } else {
+            // If running, pause
+            pauseTimer();
+        }
     }
 
     // Update timer display on input change
@@ -296,8 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     minutesInput.addEventListener('input', updateInitialDisplay);
     secondsInput.addEventListener('input', updateInitialDisplay);
 
-    focusBtn.addEventListener('click', startTimer);
-    pauseBtn.addEventListener('click', pauseTimer);
+    focusBtn.addEventListener('click', handlePlayPauseClick);
     stopBtn.addEventListener('click', stopTimer);
 
     // Initialize
