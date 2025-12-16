@@ -246,8 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerInterval);
         playPauseIcon.querySelector('path').setAttribute('d', PLAY_PATH);
         focusBtn.title = 'Resume';
-        // Save elapsed time for when we resume
-        pausedElapsedSeconds = originalSeconds - secondsRemaining;
+        // Save precise elapsed time including milliseconds for when we resume
+        const elapsedMilliseconds = Date.now() - timerStartTimestamp;
+        pausedElapsedSeconds = elapsedMilliseconds / 1000;
     }
 
     function startTimer() {
